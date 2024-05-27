@@ -1,0 +1,15 @@
+{
+  "domain": "moorgen_smart_panel",
+  "name": "Moorgen Smart Panel",
+  "codeowners": [
+    "@imixiru"
+  ],
+  "config_flow": false,
+  "dependencies": [],
+  "documentation": "https://www.home-assistant.io/integrations/moorgen_smart_panel",
+  "homekit": {},
+  "iot_class": "local_push",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": []
+}
