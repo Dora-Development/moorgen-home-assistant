@@ -1,0 +1,4 @@
+[submodule "remoorgen-go"]
+	path = remoorgen-go
+	url = git@github.com:Dora-Development/remoorgen-go.git
+	branch = home-assistant-mod
