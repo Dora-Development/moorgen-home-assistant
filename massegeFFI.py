@@ -40,7 +40,7 @@ def StartMessageHandler(entity, config):
     GoInt GetMessageFromFront();
     """)
 
-    lib = ffi.dlopen("/media/imixiru/EE98F9C398F989FB/work/home-assist-core/homeassistant/components/moorgen_smart_panel/awesome.so")
+    lib = ffi.dlopen("/media/imixiru/EE98F9C398F989FB/work/home-assist-core/config/custom_components/moorgen_smart_panel/remoorgen-go/remoorgen.so")
 
     threading.Thread(target=MessageHandler, args=(lib, entity, config)).start()
 
