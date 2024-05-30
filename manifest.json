@@ -4,7 +4,7 @@
   "codeowners": [
     "@imixiru"
   ],
-  "config_flow": false,
+  "config_flow": true,
   "dependencies": [],
   "documentation": "https://www.home-assistant.io/integrations/moorgen_smart_panel",
   "homekit": {},

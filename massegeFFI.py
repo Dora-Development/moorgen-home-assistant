@@ -4,19 +4,20 @@ from cffi import FFI
 import time
 import threading
 
-from .enitiy import button_pressed
+# from .smart_panel import button_pressed
 
 def MessageHandler(lib, entity, config):
-
-
     while 1:
-        gostr = lib.GetMessageFromFront()
-        
-        if gostr !=0:
-            print(gostr)
-            button_pressed(entity, gostr)
+        try:
+            gostr = lib.GetMessageFromFront()
+            
+            if gostr !=0:
+                print(gostr)
+                entity.button_pressed(gostr)
 
-        time.sleep(0.5)
+            time.sleep(0.5)
+        except KeyboardInterrupt:
+            return
 
 def StartMessageHandler(entity, config):
     is_64b = sys.maxsize > 2**32
@@ -40,7 +41,7 @@ def StartMessageHandler(entity, config):
     GoInt GetMessageFromFront();
     """)
 
-    lib = ffi.dlopen("/media/imixiru/EE98F9C398F989FB/work/home-assist-core/config/custom_components/moorgen_smart_panel/remoorgen-go/remoorgen.so")
+    lib = ffi.dlopen("./config/custom_components/moorgen_smart_panel/remoorgen-go/remoorgen.so")
 
     threading.Thread(target=MessageHandler, args=(lib, entity, config)).start()
 
