@@ -41,7 +41,12 @@ def StartMessageHandler(entity, config):
     GoInt GetMessageFromFront();
     """)
 
-    lib = ffi.dlopen("./config/custom_components/moorgen_smart_panel/remoorgen.so")
+        print(os.getcwd())
+    print(os.uname().machine)
+    if os.uname().machine == "x86_64":
+        lib = ffi.dlopen("./config/custom_components/moorgen_smart_panel/remoorgen_x86.so")
+    elif os.uname().machine == "aarch64":
+        lib = ffi.dlopen("/config/custom_components/moorgen_smart_panel/remoorgen_arm64.so")
 
     threading.Thread(target=MessageHandler, args=(lib, entity, config)).start()
 
