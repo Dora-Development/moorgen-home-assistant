@@ -3,6 +3,7 @@ import sys
 from cffi import FFI
 import time
 import threading
+import os
 
 # from .smart_panel import button_pressed
 
@@ -41,7 +42,7 @@ def StartMessageHandler(entity, config):
     GoInt GetMessageFromFront();
     """)
 
-        print(os.getcwd())
+    print(os.getcwd())
     print(os.uname().machine)
     if os.uname().machine == "x86_64":
         lib = ffi.dlopen("./config/custom_components/moorgen_smart_panel/remoorgen_x86.so")
