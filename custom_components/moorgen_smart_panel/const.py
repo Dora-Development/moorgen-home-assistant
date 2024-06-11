@@ -15,3 +15,5 @@ BUTTON_KEYS = [
 ] 
 
 BUTTONS_ICON_TYPE = "mdi:button-pointer"
+
+FUSE_PATH = "/home/imixiru/work/test"

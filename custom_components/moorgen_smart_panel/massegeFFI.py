@@ -4,6 +4,9 @@ from cffi import FFI
 import time
 import threading
 import os
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 # from .smart_panel import button_pressed
 
@@ -11,7 +14,8 @@ def MessageHandler(lib, entity, config):
     while 1:
         try:
             gostr = lib.GetMessageFromFront()
-            
+            _LOGGER.info("GetMSG %s", gostr)
+
             if gostr !=0:
                 print(gostr)
                 entity.button_pressed(gostr)
@@ -42,12 +46,14 @@ def StartMessageHandler(entity, config):
     GoInt GetMessageFromFront();
     """)
 
+    _LOGGER.info(os.getcwd())
     print(os.getcwd())
     print(os.uname().machine)
     if os.uname().machine == "x86_64":
         lib = ffi.dlopen("./config/custom_components/moorgen_smart_panel/remoorgen_x86.so")
     elif os.uname().machine == "aarch64":
         lib = ffi.dlopen("/config/custom_components/moorgen_smart_panel/remoorgen_arm64.so")
+    _LOGGER.info("END of FFI load %s", "1")
 
     threading.Thread(target=MessageHandler, args=(lib, entity, config)).start()
 
