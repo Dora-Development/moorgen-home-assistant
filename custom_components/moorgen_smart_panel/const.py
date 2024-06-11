@@ -1,4 +1,5 @@
 """Constants for the Moorgen Smart Panel integration."""
+import os
 
 DOMAIN = "moorgen_smart_panel"
 
@@ -16,4 +17,7 @@ BUTTON_KEYS = [
 
 BUTTONS_ICON_TYPE = "mdi:button-pointer"
 
-FUSE_PATH = "/home/imixiru/work/test"
+if os.uname().machine == "x86_64":
+    FUSE_PATH = "./config/custom_components/moorgen_smart_panel/fuse"
+elif os.uname().machine == "aarch64":
+    FUSE_PATH = "/config/custom_components/moorgen_smart_panel/fuse"

@@ -41,10 +41,10 @@ class TestButton(ButtonEntity):
     async def async_press(self) -> None:
         """Send out a persistent notification."""
         persistent_notification.async_create(
-            self.hass, f"Button {self._attr_unique_id} pressed", title="Button"
+            self.hass, f"Button {self._attr_unique_id}[{self._button.key}] pressed", title="Button"
         )
         self.hass.bus.async_fire(f"Moorgen_smart_panel_{self._attr_unique_id}_button_pressed")
-        print(f"Button {self._attr_unique_id} pressed")
+        print(f"Button {self._attr_unique_id}[{self._button.key}] pressed")
 
     @property
     def device_info(self):

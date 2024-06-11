@@ -6,6 +6,7 @@ import subprocess
 import threading
 import time
 import os
+import pwd
 
 from . import file_watchdog
 
@@ -23,11 +24,11 @@ _LOGGER = logging.getLogger(__name__)
 
 def StartSerial(serial_port: str):
     if os.uname().machine == "x86_64":
-        arch = "x86_64"
+        path = "./config/custom_components/moorgen_smart_panel/remoorgen_x86_64"
     elif os.uname().machine == "aarch64":
-        arch = "aarch64"
+        path = "/config/custom_components/moorgen_smart_panel/remoorgen_aarch64"
 
-    p = subprocess.Popen([f"./config/custom_components/moorgen_smart_panel/remoorgen_{arch}", "--mount", FUSE_PATH, "--serial", serial_port])
+    p = subprocess.Popen([path, "--mount", FUSE_PATH, "--serial", serial_port])
     _LOGGER.info("Serial started")
     try:
         while True:
@@ -43,6 +44,8 @@ class MoorgenSmartPanel:
     def __init__(self, hass: HomeAssistant, logger: logging.Logger, serial_port: str) -> None:
         self._serial_port = serial_port
         self.hass:HomeAssistant = hass
+
+        _LOGGER.info(pwd.getpwuid(os.getuid())[0])
 
         # Run go binary for serial
         threading.Thread(target=StartSerial, args=[serial_port]).start()
