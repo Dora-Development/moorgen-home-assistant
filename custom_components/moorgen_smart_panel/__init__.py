@@ -21,6 +21,7 @@ import asyncio
 from .const import DOMAIN
 import logging
 import subprocess
+import os
 
 from . import smart_panel
 from .package_manager import ManagePackages
@@ -40,6 +41,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
         _LOGGER.info("fusermount3 installed")
 
+    if os.uname().machine == "aarch64":
+        subprocess.call(["chmod", "+X", "/config/custom_components/moorgen_smart_panel", "-R"])
+    
     # проверить и исправить права доступа для бинарников
     
     sp = smart_panel.MoorgenSmartPanel(hass, _LOGGER, entry.data["serial_port"])
