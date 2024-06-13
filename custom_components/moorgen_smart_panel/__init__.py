@@ -15,26 +15,35 @@ from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 import asyncio
 # from . import sst
 from .const import DOMAIN
 import logging
+import subprocess
 
 from . import smart_panel
+from .package_manager import ManagePackages
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS: list[str] = ["button"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    #Создать объект с подключением к сервису
-    # sst1 = sst.SST(hass, entry.data["username"], entry.data["password"])
+    # asyncio.run_coroutine_threadsafe(hass.bus.listen_once(EVENT_HOMEASSISTANT_STOP, sp.shutdown), hass.loop)
+
+    if subprocess.call(["which", "fusermount3"]) != 0:
+        _LOGGER.info("cannot found package fusermount3, trying to install")
+        if ManagePackages("install", "fuse3") != True:
+            _LOGGER.info("Failed to install required package 'fuse3'")
+            return
+        _LOGGER.info("Sucsess install fuse3!")
+    else:
+        _LOGGER.info("fusermount3 installed")
+
+    # проверить и исправить права доступа для бинарников
     
     sp = smart_panel.MoorgenSmartPanel(hass, _LOGGER, entry.data["serial_port"])
-    
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = sp
-    # await hass.async_add_executor_job(
-    #          sst1.pull_data
-    #      )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True

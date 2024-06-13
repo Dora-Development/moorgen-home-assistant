@@ -21,3 +21,5 @@ if os.uname().machine == "x86_64":
     FUSE_PATH = "./config/custom_components/moorgen_smart_panel/fuse"
 elif os.uname().machine == "aarch64":
     FUSE_PATH = "/config/custom_components/moorgen_smart_panel/fuse"
+
+BUTTON_ROLLBACK_TIME = 5

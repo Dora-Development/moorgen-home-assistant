@@ -87,15 +87,18 @@ class FuseEventHandler(FileSystemEventHandler):
 # path = sys.argv[1] if len(sys.argv) > 1 else '.'
 # fuse_path = "/home/imixiru/work/test"
 
-def StartMonitoringFuse(logger: logging.Logger, panel_entity):
-    event_handler = FuseEventHandler(logger, panel_entity)
-    observer = PollingObserver()
-    observer.schedule(event_handler, FUSE_PATH, recursive=True)
-    observer.start()
-    logger.info("Observer started")
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
-    observer.join()
+class FileWatchdog():
+
+    def __init__(self, logger: logging.Logger, panel_entity) -> None:
+        self.logger = logger
+        self.event_handler = FuseEventHandler(logger, panel_entity)
+        self.observer = PollingObserver()    
+
+    def startMonitoringFuse(self):
+        self.observer.schedule(self.event_handler, FUSE_PATH, recursive=True)
+        self.observer.start()
+        self.logger.info("Observer started")
+        
+    def stopMonitoringFuse(self):
+        self.observer.stop()
+        self.observer.join()

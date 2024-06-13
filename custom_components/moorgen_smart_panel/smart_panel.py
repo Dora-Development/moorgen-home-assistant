@@ -1,5 +1,5 @@
-from homeassistant.core import HomeAssistant
-from .const import DOMAIN, BUTTON_KEYS, FUSE_PATH
+from homeassistant.core import HomeAssistant, Event
+from .const import DOMAIN, BUTTON_KEYS, FUSE_PATH, BUTTON_ROLLBACK_TIME
 import asyncio
 import logging
 import subprocess
@@ -7,6 +7,9 @@ import threading
 import time
 import os
 import pwd
+import datetime
+
+from homeassistant.util import dt as dt_util
 
 from . import file_watchdog
 
@@ -22,40 +25,42 @@ _LOGGER = logging.getLogger(__name__)
 #     hass.states.set("moorgen_smart_panel.test", "lamp off")
 #     hass.bus.fire("moorgen_smart_panel_lamp_off")
 
-def StartSerial(serial_port: str):
-    if os.uname().machine == "x86_64":
-        path = "./config/custom_components/moorgen_smart_panel/remoorgen_x86_64"
-    elif os.uname().machine == "aarch64":
-        path = "/config/custom_components/moorgen_smart_panel/remoorgen_aarch64"
-
-    p = subprocess.Popen([path, "--mount", FUSE_PATH, "--serial", serial_port])
-    _LOGGER.info("Serial started")
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        p.terminate()
-        time.sleep(3)
-        if p.poll()==None:
-            p.kill()
+# def GracefulShutdown(serial_process: subprocess.Popen, file_watchdog: file_watchdog.FileWatchdog):
+    
 
 class MoorgenSmartPanel:
 
     def __init__(self, hass: HomeAssistant, logger: logging.Logger, serial_port: str) -> None:
+        self.logger = logger
         self._serial_port = serial_port
         self.hass:HomeAssistant = hass
 
-        _LOGGER.info(pwd.getpwuid(os.getuid())[0])
+        if os.uname().machine == "x86_64":
+            path = "./config/custom_components/moorgen_smart_panel/remoorgen_x86_64"
+        elif os.uname().machine == "aarch64":
+            path = "/config/custom_components/moorgen_smart_panel/remoorgen_aarch64"
 
-        # Run go binary for serial
-        threading.Thread(target=StartSerial, args=[serial_port]).start()
+        self.serial_process = subprocess.Popen([path, "--mount", FUSE_PATH, "--serial", serial_port])
+        self.logger.info("Serial started")
 
-        threading.Thread(target=file_watchdog.StartMonitoringFuse, args=(logger, self)).start()
+        self.file_watchdog = file_watchdog.FileWatchdog(self.logger, self)
+        self.file_watchdog.startMonitoringFuse()
 
     def button_pressed(self, button_num):
         if button_num !=0 and button_num < len(BUTTON_KEYS):
-            self.hass.states.set("moorgen_smart_panel.test", button_num)
-        
             but = self.hass.data[DOMAIN][BUTTON_KEYS[button_num]]
+            if (dt_util.utcnow() - datetime.datetime.fromisoformat(but.state)).seconds < BUTTON_ROLLBACK_TIME:
+                return
+            
+            self.hass.states.set("moorgen_smart_panel.test", button_num)
             asyncio.run_coroutine_threadsafe(but._async_press_action(), self.hass.loop)
         
+    async def shutdown(self, event: Event) -> None:
+        """Graceful shutdown."""
+        self.logger.info("Graceful shutdown")
+        self.file_watchdog.stopMonitoringFuse()
+        self.serial_process.terminate()
+        time.sleep(3)
+        if self.serial_process.poll()==None:
+            self.serial_process.kill()
+        self._shutdown = True
