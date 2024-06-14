@@ -50,7 +50,7 @@ class MoorgenSmartPanel:
     def button_pressed(self, button_num):
         if button_num !=0 and button_num < len(BUTTON_KEYS):
             but = self.hass.data[DOMAIN][BUTTON_KEYS[button_num]]
-            if (dt_util.utcnow() - datetime.datetime.fromisoformat(but.state)).seconds < BUTTON_ROLLBACK_TIME:
+            if but.state != 'unknown' and (dt_util.utcnow() - datetime.datetime.fromisoformat(but.state)).seconds < BUTTON_ROLLBACK_TIME:
                 return
             
             self.hass.states.set("moorgen_smart_panel.test", button_num)
@@ -64,7 +64,10 @@ class MoorgenSmartPanel:
         self.logger.info("Graceful shutdown")
         self.file_watchdog.stopMonitoringFuse()
         self.serial_process.terminate()
-        self.serial_process.wait(3)
+        try:
+            self.serial_process.wait(3)
+        except subprocess.TimeoutExpired:
+            pass
         if self.serial_process.poll()==None:
             self.serial_process.kill()
         self._shutdown = True
