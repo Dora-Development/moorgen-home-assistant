@@ -1,6 +1,6 @@
 from homeassistant.core import HomeAssistant, Event
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
-from .const import DOMAIN, BUTTON_KEYS, FUSE_PATH, BUTTON_ROLLBACK_TIME
+from .const import DOMAIN, BUTTON_KEYS, FUSE_PATH, BUTTON_ROLLBACK_TIME, REMOORGEN_BIN_PATH
 import asyncio
 import logging
 import subprocess
@@ -34,12 +34,7 @@ class MoorgenSmartPanel:
         self.hass:HomeAssistant = hass
         self._shutdown = False
 
-        if os.uname().machine == "x86_64":
-            path = "./config/custom_components/moorgen_smart_panel/remoorgen_x86_64"
-        elif os.uname().machine == "aarch64":
-            path = "/config/custom_components/moorgen_smart_panel/remoorgen_aarch64"
-
-        self.serial_process = subprocess.Popen([path, "--mount", FUSE_PATH, "--serial", serial_port])
+        self.serial_process = subprocess.Popen([REMOORGEN_BIN_PATH, "--mount", FUSE_PATH, "--serial", serial_port])
         self.logger.info("Serial started")
 
         self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.shutdown)

@@ -18,7 +18,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 import asyncio
 # from . import sst
-from .const import DOMAIN
+from .const import DOMAIN, INTEGRATION_PATH, FUSE_PATH
 import logging
 import subprocess
 import os
@@ -30,6 +30,9 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS: list[str] = ["button"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    if not os.path.isdir(FUSE_PATH):
+        _LOGGER.info("Fuse directory does not exist, trying to create")
+        subprocess.call(["mkdir", FUSE_PATH])    
 
     if subprocess.call(["which", "fusermount3"]) != 0:
         _LOGGER.info("cannot found package fusermount3, trying to install")
@@ -40,8 +43,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
         _LOGGER.info("fusermount3 installed")
 
-    if os.uname().machine == "aarch64":
-        subprocess.call(["chmod", "+x", "/config/custom_components/moorgen_smart_panel", "-R"])
+    subprocess.call(["chmod", "+x", INTEGRATION_PATH, "-R"])
     
     sp = smart_panel.MoorgenSmartPanel(hass, _LOGGER, entry.data["serial_port"])
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = sp

@@ -18,8 +18,12 @@ BUTTON_KEYS = [
 BUTTONS_ICON_TYPE = "mdi:button-pointer"
 
 if os.uname().machine == "x86_64":
-    FUSE_PATH = "./config/custom_components/moorgen_smart_panel/fuse"
+    INTEGRATION_PATH = "./config/custom_components/moorgen_smart_panel"
+    FUSE_PATH = INTEGRATION_PATH + "/fuse"
+    REMOORGEN_BIN_PATH = INTEGRATION_PATH + "/remoorgen_x86_64"
 elif os.uname().machine == "aarch64":
-    FUSE_PATH = "/config/custom_components/moorgen_smart_panel/fuse"
+    INTEGRATION_PATH = "/config/custom_components/moorgen_smart_panel"
+    FUSE_PATH = INTEGRATION_PATH + "/fuse"
+    REMOORGEN_BIN_PATH = INTEGRATION_PATH + "/remoorgen_aarch64"
 
 BUTTON_ROLLBACK_TIME = 5
