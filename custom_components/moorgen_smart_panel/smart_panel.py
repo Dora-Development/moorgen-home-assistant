@@ -1,4 +1,5 @@
 from homeassistant.core import HomeAssistant, Event
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from .const import DOMAIN, BUTTON_KEYS, FUSE_PATH, BUTTON_ROLLBACK_TIME
 import asyncio
 import logging
@@ -24,16 +25,14 @@ _LOGGER = logging.getLogger(__name__)
 #     print("lamp off")
 #     hass.states.set("moorgen_smart_panel.test", "lamp off")
 #     hass.bus.fire("moorgen_smart_panel_lamp_off")
-
-# def GracefulShutdown(serial_process: subprocess.Popen, file_watchdog: file_watchdog.FileWatchdog):
     
-
 class MoorgenSmartPanel:
 
     def __init__(self, hass: HomeAssistant, logger: logging.Logger, serial_port: str) -> None:
         self.logger = logger
         self._serial_port = serial_port
         self.hass:HomeAssistant = hass
+        self._shutdown = False
 
         if os.uname().machine == "x86_64":
             path = "./config/custom_components/moorgen_smart_panel/remoorgen_x86_64"
@@ -42,6 +41,8 @@ class MoorgenSmartPanel:
 
         self.serial_process = subprocess.Popen([path, "--mount", FUSE_PATH, "--serial", serial_port])
         self.logger.info("Serial started")
+
+        self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.shutdown)
 
         self.file_watchdog = file_watchdog.FileWatchdog(self.logger, self)
         self.file_watchdog.startMonitoringFuse()
@@ -55,12 +56,15 @@ class MoorgenSmartPanel:
             self.hass.states.set("moorgen_smart_panel.test", button_num)
             asyncio.run_coroutine_threadsafe(but._async_press_action(), self.hass.loop)
         
-    async def shutdown(self, event: Event) -> None:
+    def shutdown(self, event: Event | None = None) -> None:
         """Graceful shutdown."""
+        if self._shutdown:
+            return
+
         self.logger.info("Graceful shutdown")
         self.file_watchdog.stopMonitoringFuse()
         self.serial_process.terminate()
-        time.sleep(3)
+        self.serial_process.wait(3)
         if self.serial_process.poll()==None:
             self.serial_process.kill()
         self._shutdown = True
