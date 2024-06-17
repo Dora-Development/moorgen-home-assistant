@@ -45,9 +45,13 @@ class MoorgenSmartPanel:
     def button_pressed(self, button_num):
         if button_num !=0 and button_num < len(BUTTON_KEYS):
             but = self.hass.data[DOMAIN][BUTTON_KEYS[button_num]]
-            if but.state != 'unknown' and (dt_util.utcnow() - datetime.datetime.fromisoformat(but.state)).seconds < BUTTON_ROLLBACK_TIME:
-                return
             
+            try:
+                if (dt_util.utcnow() - datetime.datetime.fromisoformat(but.state)).seconds < BUTTON_ROLLBACK_TIME:
+                    return
+            except TypeError:
+                pass
+
             self.hass.states.set("moorgen_smart_panel.test", button_num)
             asyncio.run_coroutine_threadsafe(but._async_press_action(), self.hass.loop)
         

@@ -38,6 +38,9 @@ class TestButton(ButtonEntity):
     def name(self):
         return f"Moorgen Smart Panel {self._attr_unique_id} button"
 
+    async def async_internal_added_to_hass(self) -> None:
+        await super().async_internal_added_to_hass()
+
     async def async_press(self) -> None:
         # ограничить частоту нажатий (только 1 нажатие определенной кнопки раз в 5 секунд)
         """Send out a persistent notification."""

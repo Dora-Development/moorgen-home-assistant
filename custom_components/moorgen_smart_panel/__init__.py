@@ -32,7 +32,7 @@ PLATFORMS: list[str] = ["button"]
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not os.path.isdir(FUSE_PATH):
         _LOGGER.info("Fuse directory does not exist, trying to create")
-        subprocess.call(["mkdir", FUSE_PATH])    
+        subprocess.call(["mkdir", FUSE_PATH])
 
     if subprocess.call(["which", "fusermount3"]) != 0:
         _LOGGER.info("cannot found package fusermount3, trying to install")
